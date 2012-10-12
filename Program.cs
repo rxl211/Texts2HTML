@@ -26,16 +26,11 @@ namespace Texts2HTML
 
         }
 
-        public HashSet<Person> parseInput()
+        private HashSet<Person> parseInput()
         {
             HashSet<Person> knownPeople = new HashSet<Person>();
 
-            Person myself = new Person();
-            myself.name = "Me";
-            myself.phone = "(202) 469-2765";
-
-            phonesToPeople.Add(myself.phone, myself);
-
+            Person myself = initilizeMyself();
             knownPeople.Add(myself);
 
             XmlDocument xmlDoc = new XmlDocument();
@@ -45,49 +40,76 @@ namespace Texts2HTML
 
             foreach (XmlElement msg in smsList)
             {
-                Text thisMsg = new Text();
-
-                String timestamp = msg.GetAttribute("t");
                 String phonenumber = msg.GetAttribute("r");
-                int direction = int.Parse(msg.GetAttribute("d"));
 
-                Person otherPerson;
-                if (phonenumber.Contains("(")) //we know this person's name!!
-                {
-                    otherPerson = extractPerson(phonenumber);
-                    
-                }
-                else //otherwise this is only a phone number and we dont have a name for this person
-                {
-                    otherPerson = getPerson(phonenumber);
-                }
-
+                Person otherPerson = getOtherPerson(phonenumber);
                 otherPerson.msgCount++;
 
-                thisMsg.from = direction == 0 ? myself : otherPerson;
-                thisMsg.to = direction == 0 ? otherPerson : myself;
-                thisMsg.timestamp = timestamp;
-                thisMsg.msg = msg.InnerText;
-
-                if (PeopleToTexts.ContainsKey(otherPerson))
-                {
-                    ArrayList textBucket = (ArrayList)PeopleToTexts[otherPerson];
-                    textBucket.Add(thisMsg);
-                    PeopleToTexts[otherPerson] = textBucket;
-                }
-                else
-                {
-                    ArrayList textBucket = new ArrayList();
-                    textBucket.Add(thisMsg);
-                    PeopleToTexts.Add(otherPerson, textBucket);
-                }
+                Text thisMsg = setTextValues(msg, myself, otherPerson)
+                addTextToBucket(otherPerson, thisMsg);
 
                 knownPeople.Add(otherPerson);
-
-                //System.Console.WriteLine(msg.InnerText);
             }
 
             return knownPeople;
+        }
+
+        private void addTextToBucket(Person otherPerson, Text thisMsg)
+        {
+            if (PeopleToTexts.ContainsKey(otherPerson))
+            {
+                ArrayList textBucket = (ArrayList)PeopleToTexts[otherPerson];
+                textBucket.Add(thisMsg);
+                PeopleToTexts[otherPerson] = textBucket;
+            }
+            else
+            {
+                ArrayList textBucket = new ArrayList();
+                textBucket.Add(thisMsg);
+                PeopleToTexts.Add(otherPerson, textBucket);
+            }
+        }
+
+        private Person getOtherPerson(String phonenumber)
+        {
+            Person otherPerson;
+            if (phonenumber.Contains("(")) //we know this person's name!!
+            {
+                otherPerson = extractPerson(phonenumber);
+
+            }
+            else //otherwise this is only a phone number and we dont have a name for this person
+            {
+                otherPerson = getPerson(phonenumber);
+            }
+
+            return otherPerson;
+        }
+
+        private Text setTextValues(XmlElement msg, Person myself, Person otherPerson)
+        {
+            Text thisMsg = new Text();
+
+            String timestamp = msg.GetAttribute("t");
+            int direction = int.Parse(msg.GetAttribute("d"));
+
+            thisMsg.from = direction == 0 ? myself : otherPerson;
+            thisMsg.to = direction == 0 ? otherPerson : myself;
+            thisMsg.timestamp = timestamp;
+            thisMsg.msg = msg.InnerText;
+
+            return thisMsg;
+        }
+
+        private Person initilizeMyself()
+        {
+            Person myself = new Person();
+            myself.name = "Me";
+            myself.phone = "";
+
+            phonesToPeople.Add(myself.phone, myself);
+
+            return myself;
         }
 
         private Person extractPerson(String input)
