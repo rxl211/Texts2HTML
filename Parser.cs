@@ -11,11 +11,12 @@ namespace Texts2HTML
     class Parser
     {
         private Hashtable phonesToPeople = new Hashtable();
-        private Hashtable PeopleToTexts = new Hashtable();
+        private Hashtable PeopleToTexts;
 
-        public HashSet<Person> parseInput(String xmlPath)
+        public HashSet<Person> parseInput(String xmlPath, Hashtable PeopleToTexts)
         {
             HashSet<Person> knownPeople = new HashSet<Person>();
+            this.PeopleToTexts = PeopleToTexts;
 
             Person myself = initilizeMyself();
             knownPeople.Add(myself);
@@ -32,7 +33,7 @@ namespace Texts2HTML
                 Person otherPerson = getOtherPerson(phonenumber);
                 otherPerson.msgCount++;
 
-                Text thisMsg = setTextValues(msg, myself, otherPerson)
+                Text thisMsg = setTextValues(msg, myself, otherPerson);
                 addTextToBucket(otherPerson, thisMsg);
 
                 knownPeople.Add(otherPerson);
@@ -45,14 +46,14 @@ namespace Texts2HTML
         {
             if (PeopleToTexts.ContainsKey(otherPerson))
             {
-                ArrayList textBucket = (ArrayList)PeopleToTexts[otherPerson];
-                textBucket.Add(thisMsg);
+                LinkedList<Text> textBucket = (LinkedList<Text>)PeopleToTexts[otherPerson];
+                textBucket.AddFirst(thisMsg);
                 PeopleToTexts[otherPerson] = textBucket;
             }
             else
             {
-                ArrayList textBucket = new ArrayList();
-                textBucket.Add(thisMsg);
+                LinkedList<Text> textBucket = new LinkedList<Text>();
+                textBucket.AddFirst(thisMsg);
                 PeopleToTexts.Add(otherPerson, textBucket);
             }
         }
