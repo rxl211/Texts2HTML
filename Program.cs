@@ -11,14 +11,16 @@ namespace Texts2HTML
     {
         static void Main(string[] args)
         {
-            //String path = "C:\\Users\\Rafael\\Desktop\\smsbackup-2012-09-26.xml";
-            String path = "C:\\Users\\rafae_000\\Desktop\\smsbackup-2012-09-26.xml";
+
+            verifyInput(args);
+
+            String path = args[0];
 
             Hashtable PeopleToTexts = new Hashtable();
             Parser parser = new Parser();
             HashSet<Person> allMyFriends = parser.parseInput(path, PeopleToTexts);
 
-            String outpath = "C:\\Users\\rafae_000\\Desktop\\smsbackup.html";
+            String outpath = args[1];
 
             HTMLGenerator gen = new HTMLGenerator();
             gen.start(allMyFriends, PeopleToTexts, outpath);
@@ -30,7 +32,32 @@ namespace Texts2HTML
             */
 
             System.Console.WriteLine("Done!");
+        }
 
+        public static void verifyInput(string[] args)
+        {
+            if (args.Length != 2)
+            {
+                System.Console.WriteLine("Please supply 2 and only 2 arguments: path to input xml and path to output file");
+                System.Environment.Exit(1);
+            }
+
+            string[] split = args[0].Split('.');
+            string ext = split[split.Length-1].ToLower();
+
+            if(!ext.Equals("xml")) {
+                System.Console.WriteLine("first argument must be an xml file");
+                System.Environment.Exit(2);
+            }
+
+            split = args[1].Split('.');
+            ext = split[split.Length - 1].ToLower();
+
+            if (!ext.Equals("html"))
+            {
+                System.Console.WriteLine("It is recommended that the second argument be an HTML file!");
+                System.Console.WriteLine("...continuing anyways...");
+            }
         }
     }
 }

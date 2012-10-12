@@ -13,16 +13,29 @@ namespace Texts2HTML
         private Hashtable phonesToPeople = new Hashtable();
         private Hashtable PeopleToTexts;
 
-        public HashSet<Person> parseInput(String xmlPath, Hashtable PeopleToTexts)
+        public HashSet<Person> parseInput(String xmlPath, Hashtable _PeopleToTexts)
         {
             HashSet<Person> knownPeople = new HashSet<Person>();
-            this.PeopleToTexts = PeopleToTexts;
+            this.PeopleToTexts = _PeopleToTexts;
 
             Person myself = initilizeMyself();
             knownPeople.Add(myself);
 
             XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load(xmlPath); //* load the XML document from the specified file.
+            try
+            {
+                xmlDoc.Load(xmlPath); //* load the XML document from the specified file.
+            }
+            catch (System.IO.FileNotFoundException)
+            {
+                System.Console.WriteLine("Could not find input xml file!");
+                System.Environment.Exit(3);
+            }
+            catch (Exception e)
+            {
+                System.Console.WriteLine("Could not load input xml file!");
+                System.Environment.Exit(4);
+            }
 
             XmlNodeList smsList = xmlDoc.GetElementsByTagName("s");
 
