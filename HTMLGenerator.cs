@@ -33,7 +33,15 @@ namespace Texts2HTML
                 }
 	        }
 
-            System.IO.File.WriteAllText(output, stringWriter.ToString());
+            try
+            {
+                System.IO.File.WriteAllText(output, stringWriter.ToString());
+            }
+            catch
+            {
+                System.Console.WriteLine("Could not write to output file!");
+                System.Environment.Exit(5);
+            }
 
             return true;
         }
